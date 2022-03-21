@@ -27,11 +27,6 @@ static char dvdver[] = "rom1:DVDVER?";
 static char eromdrvCMD[] = "-k rom1:EROMDRV?";
 static char dvdelfCMD[] = "-x erom0:DVDELF";
 
-//As our homebrew SDK can be linked against any either fileio or fileXio
-extern int (*_ps2sdk_close)(int) __attribute__((section("data")));
-extern int (*_ps2sdk_open)(const char*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_read)(int, void*, int) __attribute__((section("data")));
-
 static int readMCFile(int fd, void *buffer, int len);
 static int ReadFileFromMC(int port, int slot, const char *file, void *buffer, int len);
 static int getStatMC(int port, int slot, int *type, int *free, int *format);
@@ -256,12 +251,12 @@ static int CheckDVDPlayerUpdate(void)
 	}
 	else
 	{
-		if(OSDGetDVDPlayerRegion(&dvdid[10]) == 0 || (fd = _ps2sdk_open(dvdid, O_RDONLY)) < 0)
-			fd = _ps2sdk_open("rom1:DVDID", O_RDONLY);
+		if(OSDGetDVDPlayerRegion(&dvdid[10]) == 0 || (fd = open(dvdid, O_RDONLY)) < 0)
+			fd = open("rom1:DVDID", O_RDONLY);
 
 		if(fd < 0)
 			return -1;
-		_ps2sdk_close(fd);
+		close(fd);
 
 		return 2;
 	}
@@ -331,8 +326,8 @@ int DVDPlayerInit(void)
 	ROMDVDPlayer.major = -1;
 	ROMDVDPlayer.region = -1;
 
-	if(OSDGetDVDPlayerRegion(&dvdid[10]) == 0 || (fd = _ps2sdk_open(dvdid, O_RDONLY)) < 0)
-		fd = _ps2sdk_open("rom1:DVDID", O_RDONLY);
+	if(OSDGetDVDPlayerRegion(&dvdid[10]) == 0 || (fd = open(dvdid, O_RDONLY)) < 0)
+		fd = open("rom1:DVDID", O_RDONLY);
 
 	if(fd < 0)
 	{	//Not having a DVD player is not an error.
@@ -346,8 +341,8 @@ int DVDPlayerInit(void)
 		return 0;
 	}
 
-	_ps2sdk_read(fd, id, sizeof(id));
-	_ps2sdk_close(fd);
+	read(fd, id, sizeof(id));
+	close(fd);
 
 	ROMDVDPlayer.major = atoi(id);
 
@@ -374,13 +369,13 @@ int DVDPlayerInit(void)
 
 	if(result == 0)
 	{
-		if(OSDGetDVDPlayerRegion(&dvdver[11]) == 0 || (fd = _ps2sdk_open(dvdver, O_RDONLY)) < 0)
-			fd = _ps2sdk_open("rom1:DVDVER", O_RDONLY);
+		if(OSDGetDVDPlayerRegion(&dvdver[11]) == 0 || (fd = open(dvdver, O_RDONLY)) < 0)
+			fd = open("rom1:DVDVER", O_RDONLY);
 
 		if(fd >= 0)
 		{
-			result = _ps2sdk_read(fd, ROMDVDPlayer.ver, sizeof(ROMDVDPlayer.ver));
-			_ps2sdk_close(fd);
+			result = read(fd, ROMDVDPlayer.ver, sizeof(ROMDVDPlayer.ver));
+			close(fd);
 
 			//NULL-terminate, only if non-error
 			ROMDVDPlayer.ver[result >= 0 ? result : 0] = '\0';

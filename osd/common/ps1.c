@@ -13,11 +13,6 @@
 #include "OSDInit.h"
 #include "OSDHistory.h"
 
-//As our homebrew SDK can be linked against any either fileio or fileXio
-extern int (*_ps2sdk_close)(int) __attribute__((section("data")));
-extern int (*_ps2sdk_open)(const char*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_read)(int, void*, int) __attribute__((section("data")));
-
 struct PS1DRV{
 	char ver[32];
 	int major;
@@ -37,13 +32,13 @@ int PS1DRVInit(void)
 
 	ps1drv.ver[0] = '\0';
 
-	fd = _ps2sdk_open("rom0:PS1ID", O_RDONLY);
+	fd = open("rom0:PS1ID", O_RDONLY);
 
 	if(fd < 0)
 		return -1;
 
-	_ps2sdk_read(fd, ps1drv.ver, sizeof(ps1drv.ver));
-	_ps2sdk_close(fd);
+	read(fd, ps1drv.ver, sizeof(ps1drv.ver));
+	close(fd);
 
 	pChar = ps1drv.ver;
 	ps1drv.major = atoi(pChar);
@@ -71,13 +66,13 @@ int PS1DRVInit(void)
 
 	if(result == 0)
 	{
-		if(OSDGetPS1DRVRegion(&ps1ver_uni[11]) == 0 || (fd = _ps2sdk_open(ps1ver_uni, O_RDONLY)) < 0)
-			fd = _ps2sdk_open("rom0:PS1VER", O_RDONLY);
+		if(OSDGetPS1DRVRegion(&ps1ver_uni[11]) == 0 || (fd = open(ps1ver_uni, O_RDONLY)) < 0)
+			fd = open("rom0:PS1VER", O_RDONLY);
 
 		if(fd >= 0)
 		{
-			result = _ps2sdk_read(fd, ps1drv.ver, sizeof(ps1drv.ver) - 1);
-			_ps2sdk_close(fd);
+			result = read(fd, ps1drv.ver, sizeof(ps1drv.ver) - 1);
+			close(fd);
 
 			//NULL-terminate, only if non-error
 			ps1drv.ver[result >= 0 ? result : 0] = '\0';
@@ -173,7 +168,7 @@ static int ParseBootCNF(void)
 		It is normally possible to actually parse SYSTEM.CNF and get the boot filename from BOOT.
 		Lots of homebrew software do that, and so does Sony (for all other regions).
 		But I do not know for sure whether that can be done for Chinese PlayStation discs. */
-		sceCdAltReadPS1BootParam(ps1drv_boot, &stat);
+		sceCdReadPS1BootParam(ps1drv_boot, &stat);
 
 		if(stat & 0x180)
 		{	//Command unsupported or failed for some reason.
@@ -191,10 +186,10 @@ static int ParseBootCNF(void)
 		return 1;
 	}
 
-	if((fd = _ps2sdk_open("cdrom0:\\SYSTEM.CNF;1", O_RDWR)) >= 0)
+	if((fd = open("cdrom0:\\SYSTEM.CNF;1", O_RDWR)) >= 0)
 	{
-		size = _ps2sdk_read(fd, system_cnf, sizeof(system_cnf));
-		_ps2sdk_close(fd);
+		size = read(fd, system_cnf, sizeof(system_cnf));
+		close(fd);
 
 		system_cnf[size] = '\0';
 		line[0] = '\0';
@@ -238,21 +233,21 @@ static int ParseBootCNF(void)
 	}
 	else
 	{	//Odd PlayStation title
-		if((fd = _ps2sdk_open("cdrom0:\\PSXMYST\\MYST.CCS;1", O_RDWR)) >= 0)
+		if((fd = open("cdrom0:\\PSXMYST\\MYST.CCS;1", O_RDWR)) >= 0)
 		{
-			_ps2sdk_close(fd);
+			close(fd);
 			strcpy(ps1drv_boot, "SLPS_000.24");
 			return 1;
 		}
-		else if ((fd = _ps2sdk_open("cdrom0:\\CDROM\\LASTPHOT\\ALL_C.NBN;1", O_RDWR)) >= 0)
+		else if ((fd = open("cdrom0:\\CDROM\\LASTPHOT\\ALL_C.NBN;1", O_RDWR)) >= 0)
 		{
-			_ps2sdk_close(fd);
+			close(fd);
 			strcpy(ps1drv_boot, "SLPS_000.65");
 			return 1;
 		}
-		else if ((fd = _ps2sdk_open("cdrom0:\\PSX.EXE;1", O_RDWR)) >= 0)
+		else if ((fd = open("cdrom0:\\PSX.EXE;1", O_RDWR)) >= 0)
 		{	//Generic PlayStation game, with no ID information
-			_ps2sdk_close(fd);
+			close(fd);
 			strcpy(ps1drv_boot, "???");
 			return 1;
 		}

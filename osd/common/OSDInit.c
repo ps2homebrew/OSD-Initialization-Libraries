@@ -28,11 +28,6 @@ static u8 ConsoleRegionData[16] = {0, 0, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 //Perhaps it once used to read more configuration blocks (original capacity was 7 blocks).
 static u8 OSDConfigBuffer[CONFIG_BLOCK_SIZE * 2];
 
-//As our homebrew SDK can be linked against any either fileio or fileXio
-extern int (*_ps2sdk_close)(int) __attribute__((section("data")));
-extern int (*_ps2sdk_open)(const char*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_read)(int, void*, int) __attribute__((section("data")));
-
 //Local function prototypes
 static int InitMGRegion(void);
 static int ConsoleInitRegion(void);
@@ -63,7 +58,7 @@ static int InitMGRegion(void)
 	if(ConsoleRegionParamInitStatus == 0)
 	{
 		do{
-			if((result = sceCdAltReadRegionParams(ConsoleRegionData, &stat)) == 0)
+			if((result = sceCdReadRegionParams(ConsoleRegionData, &stat)) == 0)
 			{	//Failed.
 				ConsoleRegionParamInitStatus=1;
 			}
@@ -178,10 +173,10 @@ static int GetConsoleRegion(void)
 
 	if((result=ConsoleRegion)<0)
 	{
-		if((fd = _ps2sdk_open("rom0:ROMVER", O_RDONLY)) >= 0)
+		if((fd = open("rom0:ROMVER", O_RDONLY)) >= 0)
 		{
-			_ps2sdk_read(fd, romver, sizeof(romver));
-			_ps2sdk_close(fd);
+			read(fd, romver, sizeof(romver));
+			close(fd);
 			ConsoleRegionParamsInitPS1DRV(romver);
 
 			switch(romver[4])
@@ -239,10 +234,10 @@ static int GetOSDRegion(void)
 	if(ConsoleOSDRegionInitStatus == 0 || ConsoleOSDRegion == -1)
 	{
 		ConsoleOSDRegionInitStatus = 1;
-		if((fd = _ps2sdk_open("rom0:OSDVER", O_RDONLY)) >= 0)
+		if((fd = open("rom0:OSDVER", O_RDONLY)) >= 0)
 		{
-			_ps2sdk_read(fd, OSDVer, sizeof(OSDVer));
-			_ps2sdk_close(fd);
+			read(fd, OSDVer, sizeof(OSDVer));
+			close(fd);
 			CdReadOSDRegionParams(OSDVer);
 			switch(OSDVer[4])
 			{
@@ -579,10 +574,10 @@ int OSDInitROMVER(void)
 	int fd;
 
 	memset(ConsoleROMVER, 0, ROMVER_MAX_LEN);
-	if((fd = _ps2sdk_open("rom0:ROMVER", O_RDONLY)) >= 0)
+	if((fd = open("rom0:ROMVER", O_RDONLY)) >= 0)
 	{
-		_ps2sdk_read(fd, ConsoleROMVER, ROMVER_MAX_LEN);
-		_ps2sdk_close(fd);
+		read(fd, ConsoleROMVER, ROMVER_MAX_LEN);
+		close(fd);
 	}
 
 	return 0;

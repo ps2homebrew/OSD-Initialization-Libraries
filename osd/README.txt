@@ -1,18 +1,32 @@
-OSD libary v1.03 - 2018/08/25
+OSD libary v1.04 - 2019/12/07
 -----------------------------
 
 The package contains various OSD-related files:
-	dvdplayer.c:	Contains DVD Player management selection and booting code.
-	libcdvd_add.c:	Contains add-on functions for the ancient libcdvd libraries that we use.
-	main.c:		Contains the main function, which shows how the various library functions are to be used.
-	OSDConfig.c:	Contains OSD configuration management functions.
-	OSDInit.c:	Contains low-level OSD configuration-management functions.
-	OSDHistory.c:	Contains functions for loading and updating the user's play history.
-	ps1.c		Contains functions for booting PlayStation game discs
-	ps2.c		Contains functions for booting PlayStation 2 game discs
-	modelname.c	Contains functions for retrieving the PlayStation 2 console's model name (i.e. SCPH-77006).
+	main.c:			Contains the main function, which shows how the various library functions are to be used.
+	linkfile		linkfile for this example.
+				Exists mainly for the sake of the PSX example, whereby the stack pointer must be within the first 32MB during the EE RAM capacity switch.
+	psx/ioprp.img:		Contains an IOPRP image that contains a custom IOP BooT CONFiguration (IOPBTCONF) file.
+				This is necessary to load PCDVDMAN and PCDVDFSV from the PSX's boot ROM, to deal with the PSX-specific hardware.
+	psx/scmd_add.c		Contains add-on functions for linking up with the PCDVDFSV module. Only for the PSX.
+	common/dvdplayer.c:	Contains DVD Player management selection and booting code.
+	common/libcdvd_add.c:	Contains add-on functions for the ancient libcdvd libraries that we use.
+	common/OSDConfig.c:	Contains OSD configuration management functions.
+	common/OSDInit.c:	Contains low-level OSD configuration-management functions.
+	common/OSDHistory.c:	Contains functions for loading and updating the user's play history.
+	common/ps1.c		Contains functions for booting PlayStation game discs
+	common/ps2.c		Contains functions for booting PlayStation 2 game discs
+	common/modelname.c	Contains functions for retrieving the PlayStation 2 console's model name (i.e. SCPH-77006).
 
-	As of now, the files were based on the OSD from ROM v2.20, which has a late design.
+	Most of files were based on the OSD from ROM v2.20, which has a late design.
+
+Notes regarding the PSX example:
+	The PSX's OSDSYS differs from the standard PS2's, whereby it isn't a fully-function dashboard on its own.
+	It will also perform the boot certification step, which is why it is not necessary.
+	The PSX's EE has 64MB and its IOP has 8MB. Similar to the TOOL, the memory capacity can be limited to 32MB with the TLB.
+	It also has a dual-mode CD/DVD drive - by default, it starts up in writer ("Rainbow") mode. In this mode, the usual registers do not work.
+	The PSX also has a "QUIT GAME" button, which must be enabled by "notifying" the MECHACON of the game mode with sceCdNotifyGameStart().
+
+	To build the PSX example, set the PSX variable in the Makefile to 1.
 
 Notes regarding disc-booting:
 	The example shows how the browser boots PlayStation and PlayStation 2 game discs.
@@ -59,6 +73,8 @@ Known limitations:
 	*Remote Control management does not actually do anything (sceCdBypassCtl not implemented).
 	 sceCdBypassCtl() must be implemented on the IOP. CDVDMAN does a check against the IOP PRId, and acts according to the IOP revision.
 	 Revisions before 2.3 will involve a S-command, while later revisions will involve other registers.
+	 The only true way would be to execute code on the IOP. An easy way would be to use XCDVDMAN+XCDVDFSV from the target PS2.
+	 However, this is a board-specific function that might not exist in the XCDVDMAN module versions from all PS2s.
 	*The actual purpose of OSDConfigGetRcEnabled & OSDConfigSetRcEnabled is not clear.
 		I am not entirely sure what this is.
 		In ROM v2.20, it seems to have a relationship to a menu that is labeled "Console" and has the text "Remote Control,Off,On".

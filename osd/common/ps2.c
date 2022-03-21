@@ -21,12 +21,6 @@ void BootError(void)
 	ExecOSD(1, args);
 }
 
-//As our homebrew SDK can be linked against any either fileio or fileXio
-extern int (*_ps2sdk_close)(int) __attribute__((section("data")));
-extern int (*_ps2sdk_open)(const char*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_read)(int, void*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_lseek)(int, int, int) __attribute__((section("data")));
-
 #define CNF_PATH_LEN_MAX	64
 #define CNF_LEN_MAX		1024
 
@@ -288,27 +282,27 @@ int PS2DiscBoot(void)
 	}
 
 	//The browser uses open mode 5 when a specific thread is created, otherwise mode 4.
-	if((fd = _ps2sdk_open("cdrom0:\\SYSTEM.CNF;1", O_RDONLY)) < 0)
+	if((fd = open("cdrom0:\\SYSTEM.CNF;1", O_RDONLY)) < 0)
 	{
 		printf("Can't open SYSTEM.CNF\n");
 		BootError();
 	}
 
-	size = _ps2sdk_lseek(fd, 0, SEEK_END);
-	_ps2sdk_lseek(fd, 0, SEEK_SET);
+	size = lseek(fd, 0, SEEK_END);
+	lseek(fd, 0, SEEK_SET);
 
 	if(size >= CNF_LEN_MAX)
 		size = CNF_LEN_MAX -1;
 
 	for(size_remaining = size; size_remaining > 0; size_remaining -= size_read)
 	{
-		if((size_read = _ps2sdk_read(fd, system_cnf, size_remaining)) <= 0)
+		if((size_read = read(fd, system_cnf, size_remaining)) <= 0)
 		{
 			printf("Can't read SYSTEM.CNF\n");
 			BootError();
 		}
 	}
-	_ps2sdk_close(fd);
+	close(fd);
 
 	system_cnf[size] = '\0';
 	cnf_end = &system_cnf[size];

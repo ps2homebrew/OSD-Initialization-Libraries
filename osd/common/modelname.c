@@ -9,12 +9,6 @@
 #include "main.h"
 #include "modelname.h"
 
-//As our homebrew SDK can be linked against any either fileio or fileXio
-extern int (*_ps2sdk_close)(int) __attribute__((section("data")));
-extern int (*_ps2sdk_open)(const char*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_read)(int, void*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_lseek)(int, int, int) __attribute__((section("data")));
-
 #define MODEL_NAME_MAX_LEN	17
 static char ModelName[MODEL_NAME_MAX_LEN];
 
@@ -45,11 +39,11 @@ static int ReadModelName(char *name)
 			strcpy(name, "SCPH-10000");
 		else
 		{	//For ROM v1.01 (Late SCPH-10000, and all SCPH-15000 units).
-			if((fd = _ps2sdk_open("rom0:OSDSYS", O_RDONLY)) >= 0)
+			if((fd = open("rom0:OSDSYS", O_RDONLY)) >= 0)
 			{	//The model name is located at this address.
-				_ps2sdk_lseek(fd, 0x8C808, SEEK_SET);
-				_ps2sdk_read(fd, name, MODEL_NAME_MAX_LEN);
-				_ps2sdk_close(fd);
+				lseek(fd, 0x8C808, SEEK_SET);
+				read(fd, name, MODEL_NAME_MAX_LEN);
+				close(fd);
 			}
 			else
 				strcpy(name, "Unknown");
@@ -58,7 +52,7 @@ static int ReadModelName(char *name)
 		return 0;	//Original returned -1
 	}
 	else{
-		if((result = sceCdAltRM(name, &stat)) == 1)
+		if((result = sceCdRM(name, &stat)) == 1)
 		{	//Command issued successfully.
 			if(stat & 0x80)
 				return -2;

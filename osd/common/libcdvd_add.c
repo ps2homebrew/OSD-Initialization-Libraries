@@ -6,7 +6,7 @@
 
 #include "libcdvd_add.h"
 
-static unsigned char MECHACON_CMD_S36_supported = 0, MECHACON_CMD_S27_supported = 0;
+static unsigned char MECHACON_CMD_S36_supported = 0, MECHACON_CMD_S27_supported = 0, MECHACON_CMD_S24_supported = 0;
 
 //Initialize add-on functions. Currently only retrieves the MECHACON's version to determine what sceCdAltGetRegionParams() should do.
 int cdInitAdd(void)
@@ -23,6 +23,7 @@ int cdInitAdd(void)
 			MECHA_version = MECHA_version_data[2] | ((unsigned int)MECHA_version_data[1] << 8) | ((unsigned int)MECHA_version_data[0] << 16);
 			MECHACON_CMD_S36_supported = (0x5FFFF < MECHA_version);	//v6.0 and later
 			MECHACON_CMD_S27_supported = (0x501FF < MECHA_version);	//v5.2 and later
+			MECHACON_CMD_S24_supported = (0x4FFFF < MECHA_version); //v5.0 and later
 			return 0;
 		}
 	}
@@ -36,7 +37,7 @@ int cdInitAdd(void)
 	 This function provides an equivalent of the sceCdGetRegionParams function from the newer CDVDMAN modules. The old CDVDFSV and CDVDMAN modules don't support this S-command.
 	It's supported by only slimline consoles, and returns regional information (e.g. MECHACON version, MG region mask, DVD player region letter etc.).
 */
-int sceCdAltReadRegionParams(u8 *data, u32 *stat)
+int sceCdReadRegionParams(u8 *data, u32 *stat)
 {
 	unsigned char RegionData[15];
 	int result;
@@ -60,7 +61,7 @@ int sceCdAltReadRegionParams(u8 *data, u32 *stat)
 }
 
 // This function provides an equivalent of the sceCdBootCertify function from the newer CDVDMAN modules. The old CDVDFSV and CDVDMAN modules don't support this S-command.
-int sceCdAltBootCertify(const u8* data)
+int sceCdBootCertify(const u8* data)
 {
 	int result;
 	unsigned char CmdResult;
@@ -73,7 +74,7 @@ int sceCdAltBootCertify(const u8* data)
 	return result;
 }
 
-int sceCdAltRM(char *ModelName, u32 *stat)
+int sceCdRM(char *ModelName, u32 *stat)
 {
 	unsigned char rdata[9];
 	unsigned char sdata;
@@ -98,7 +99,7 @@ int sceCdAltRM(char *ModelName, u32 *stat)
 	 This function provides an equivalent of the sceCdReadPS1BootParam function from the newer CDVDMAN modules. The old CDVDFSV and CDVDMAN modules don't support this S-command.
 	It's supported by only slimline consoles, and returns the boot path for the inserted PlayStation disc.
 */
-int sceCdAltReadPS1BootParam(char *param, u32 *stat)
+int sceCdReadPS1BootParam(char *param, u32 *stat)
 {
 	u8 out[16];
 	int result;
@@ -121,9 +122,26 @@ int sceCdAltReadPS1BootParam(char *param, u32 *stat)
 	return result;
 }
 
-int sceCdAltRcBypassCtl(int bypass, u32 *stat)
+int sceCdRcBypassCtl(int bypass, u32 *stat)
 {	//TODO: not implemented.
-	printf("FIXME: sceCdAltRcBypassCtl() not implemented!\n");
-	*stat = 0;
-	return 1;
+	u8 in[16], out[16];
+	int result;
+
+	memset(in, 0, 11);
+	if(MECHACON_CMD_S24_supported)
+	{
+		// TODO
+		if((result = sceCdApplySCmd(0x24, &bypass, 4, out, 13)) != 0)
+		{
+			*stat = out[0];
+		}
+	}
+	else
+	{
+		*stat = 0x100;
+		result = 1;
+	}
+
+	return result;
 }
+
