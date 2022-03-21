@@ -10,7 +10,7 @@ PROHBIT_DVD_0100 = 0
 XCDVD_READKEY = 0
 
 #Enable to build the PSX example.
-PSX=0
+PSX = 0
 
 EE_BIN = example.elf
 
