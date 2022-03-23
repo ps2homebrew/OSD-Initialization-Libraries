@@ -53,10 +53,10 @@ char ConsoleROMVER[ROMVER_MAX_LEN];
 static int InitMGRegion(void)
 {
     u32 stat;
-    int result;
 
     if (ConsoleRegionParamInitStatus == 0)
     {
+        int result;
         do
         {
             if ((result = sceCdReadRegionParams(ConsoleRegionData, &stat)) == 0)
@@ -85,9 +85,9 @@ static int InitMGRegion(void)
 void OSDInitSystemPaths(void)
 {
     int region;
-    char regions[CONSOLE_REGION_COUNT] = {'I', 'A', 'E', 'C'};
+    const char regions[CONSOLE_REGION_COUNT] = {'I', 'A', 'E', 'C'};
 
-    region                             = OSDGetConsoleRegion();
+    region                                   = OSDGetConsoleRegion();
     if (region >= 0 && region < CONSOLE_REGION_COUNT)
     {
         SystemDataFolder[1] = regions[region];
@@ -170,13 +170,14 @@ int OSDGetDVDPlayerRegion(char *region)
 
 static int GetConsoleRegion(void)
 {
-    char romver[16];
-    int fd, result;
+    int result;
 
     if ((result = ConsoleRegion) < 0)
     {
+        int fd;
         if ((fd = open("rom0:ROMVER", O_RDONLY)) >= 0)
         {
+            char romver[16];
             read(fd, romver, sizeof(romver));
             close(fd);
             ConsoleRegionParamsInitPS1DRV(romver);
@@ -235,10 +236,10 @@ static int CdReadOSDRegionParams(char *OSDVer)
 static int GetOSDRegion(void)
 {
     char OSDVer[16];
-    int fd;
 
     if (ConsoleOSDRegionInitStatus == 0 || ConsoleOSDRegion == -1)
     {
+        int fd;
         ConsoleOSDRegionInitStatus = 1;
         if ((fd = open("rom0:OSDVER", O_RDONLY)) >= 0)
         {
@@ -284,11 +285,9 @@ static int GetOSDRegion(void)
 
 static void InitOSDDefaultLanguage(int region, const char *language)
 {
-    int DefaultLang;
-
-    DefaultLang = -1;
     if (ConsoleOSDLanguage == -1)
     {
+        int DefaultLang = -1;
         if (language != NULL)
         {
             if (strncmp(language, "jpn", 3) == 0)

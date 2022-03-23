@@ -28,7 +28,7 @@ int cdInitAdd(void)
         }
     }
 
-    //    printf("Failed to get MECHACON version: %d 0x%x\n", result, status);
+    // printf("Failed to get MECHACON version: %d 0x%x\n", result, status);
 
     return -1;
 }

@@ -1,0 +1,72 @@
+name: CI-compile
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ps2dev/ps2dev:v1.0
+    # instead of "ps2dev/ps2dev:latest" you can use different tags, for example for old projects you can use "ps2dev/ps2dev:v1.0"
+    steps:
+      - name: Install dependencies
+        run: |
+          apk add build-base git zip
+
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --prune --unshallow
+
+      - name: Get short SHA and repository name
+        id: slug
+        run: |
+          echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+          echo "::set-output name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")"
+
+      - name: Compile osd
+        run: |
+          make -C osd
+          ls -l osd
+          # zip HDDChecker-${{ steps.slug.outputs.sha8 }}.zip HDDChecker.elf lang/*
+
+      - name: Compile kpatch
+        run: |
+          make -C kpatch/patch0100
+          make -C kpatch/patch0101
+          ls -l kpatch/patch0100
+          ls -l kpatch/patch0101
+
+      - name: Upload artifacts
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v2
+        with:
+          path: |
+            osd/example.elf
+            kpatch/patch0100/osdsys.elf
+            kpatch/patch0101/osd110.elf
+
+      - name: Create pre-release
+        if: github.ref == 'refs/heads/main'
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: true
+          automatic_release_tag: "latest"
+          title: "Development build"
+          files: |
+            osd/example.elf
+            kpatch/patch0100/osdsys.elf
+            kpatch/patch0101/osd110.elf
+
+      - name: Create Tagged Release Draft
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          draft: true
+          files: |
+            osd/example.elf
+            kpatch/patch0100/osdsys.elf
+            kpatch/patch0101/osd110.elf

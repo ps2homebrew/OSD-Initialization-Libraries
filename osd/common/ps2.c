@@ -94,7 +94,7 @@ static const char *CNFGetKey(const char *line, char *key)
     return line;
 }
 
-static int CNFCheckBootFile(char *value, const char *key)
+static int CNFCheckBootFile(const char *value, const char *key)
 {
     int i;
 

@@ -284,10 +284,9 @@ static u16 GetTimestamp(void)
 
 static void AddHistoryRecord(const char *name)
 {
-    struct HistoryEntry *NewEntry;
     int i, value, LeastUsedRecord, LeastUsedRecordLaunchCount, LeastUsedRecordTimestamp, NewLaunchCount;
     u8 BlankSlotList[MAX_HISTORY_ENTRIES];
-    int NumBlankSlots, NumSlotsUsed, IsNewRecord;
+    int IsNewRecord;
 
     LeastUsedRecord            = 0;
     LeastUsedRecordTimestamp   = INT_MAX;
@@ -360,8 +359,7 @@ static void AddHistoryRecord(const char *name)
     if (IsNewRecord)
     {
         // Count and consolidate a list of blank slots.
-        NumBlankSlots = 0;
-        NumSlotsUsed  = 0;
+        int NumBlankSlots = 0, NumSlotsUsed = 0;
         for (i = 0; i < MAX_HISTORY_ENTRIES; i++)
         {
             if (HistoryEntries[i].name[0] == '\0')
@@ -378,6 +376,7 @@ static void AddHistoryRecord(const char *name)
 
         if (NumSlotsUsed != MAX_HISTORY_ENTRIES)
         {
+            struct HistoryEntry *NewEntry;
             if (NumBlankSlots > 0)
             { // Randomly choose an empty slot.
                 NewEntry = &HistoryEntries[BlankSlotList[rand() % NumBlankSlots]];

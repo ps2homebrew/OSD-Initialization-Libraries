@@ -16,7 +16,7 @@ extern char ConsoleROMVER[];
 
 static int ReadModelName(char *name)
 {
-    int stat, result, fd;
+    int stat, result;
 
     /*  This function is a hybrid between the late ROM browser program and the HDD Browser.
         In v2.20, there was only a simple null-terminate before calling sceCdRM(), as below.
@@ -40,6 +40,7 @@ static int ReadModelName(char *name)
             strcpy(name, "SCPH-10000");
         else
         { // For ROM v1.01 (Late SCPH-10000, and all SCPH-15000 units).
+            int fd;
             if ((fd = open("rom0:OSDSYS", O_RDONLY)) >= 0)
             { // The model name is located at this address.
                 lseek(fd, 0x8C808, SEEK_SET);

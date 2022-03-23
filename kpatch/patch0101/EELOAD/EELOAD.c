@@ -109,11 +109,11 @@ static void PatchOSDSYS(void)
 /* 0x00082180 */
 static void SyncSIF0(void)
 {
-    int i;
-
     // If SIF0 has incoming data, initialize SIF0 and acknowledge incoming data.
     if (*DMA_REG_STAT & 0x20)
     {
+        int i;
+
         SifSetDChain(); // Re-initialize SIF0 (IOP -> EE)
         *DMA_REG_STAT = 0x20;
         while (*R_EE_SBUS_REG40 & 0x3000) {};
@@ -197,7 +197,6 @@ static void BootError(const char *path)
 // 0x000823d8
 int main(int argc, char *argv[])
 {
-    const char *CommandString;
     int i;
 
     if (argc >= 2)
@@ -217,6 +216,7 @@ int main(int argc, char *argv[])
 
             while (argc > 0)
             {
+                const char *CommandString;
                 if ((CommandString = IsSwitchCheck("-m ", argv[0])) != NULL)
                 {
                     SifLoadModule(CommandString, 0, NULL);

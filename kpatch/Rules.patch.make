@@ -53,5 +53,5 @@ $(EE_BIN) : $(EE_OBJS)
 		-o $(EE_BIN) $(EE_CRT0_OBJ) $(EE_OBJS) $(EE_LDFLAGS) $(EE_LIBS)
 	$(EE_STRIP) -s -d -R .mdebug.eabi64 -R .reginfo -R .comment $(EE_BIN)
 
-clean::
+clean:
 	rm -f $(EE_BIN) $(EE_OBJS) $(MAPFILE)

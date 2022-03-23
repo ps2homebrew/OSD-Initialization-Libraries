@@ -98,7 +98,6 @@ const char *PS1DRVGetVersion(void)
 
 static void CNFGetKey(char *cnf, char *line, const char *key)
 {
-    const char *pKey;
     int len;
 
     if ((len = strlen(key)) != 0)
@@ -115,6 +114,7 @@ static void CNFGetKey(char *cnf, char *line, const char *key)
 
                 if (*cnf == '=')
                 { // Equals sign found
+                    const char *pKey;
                     ++cnf;
 
                     for (; isspace(*cnf); cnf++)
@@ -155,10 +155,8 @@ static void CNFGetKey(char *cnf, char *line, const char *key)
 
 static int ParseBootCNF(void)
 {
-    char system_cnf[2048], line[128];
-    const char *pChar;
     u32 stat;
-    int fd, size, i, len;
+    int fd;
 
     strcpy(ps1drv_ver, "???");
     strcpy(ps1drv_boot, "???");
@@ -192,6 +190,10 @@ static int ParseBootCNF(void)
 
     if ((fd = open("cdrom0:\\SYSTEM.CNF;1", O_RDWR)) >= 0)
     {
+        char system_cnf[2048], line[128];
+        const char *pChar;
+        int size, i, len;
+
         size = read(fd, system_cnf, sizeof(system_cnf));
         close(fd);
 

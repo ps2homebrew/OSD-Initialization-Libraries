@@ -89,9 +89,10 @@ static void InitPSX()
 
 int main(int argc, char *argv[])
 {
-    int fd, OldDiscType, DiscType, ValidDiscInserted, result;
+    int OldDiscType, DiscType, ValidDiscInserted, result;
     u32 stat;
 #ifndef PSX
+    int fd;
     char romver[16], RomName[4];
 #endif
 
@@ -128,7 +129,7 @@ int main(int argc, char *argv[])
 
     // The old IOP kernel has no support for LoadModuleBuffer. Apply the patch to enable it.
     sbv_patch_enable_lmb();
-    /*    Load the SIO2 modules. You may choose to use the ones from ROM,
+    /*  Load the SIO2 modules. You may choose to use the ones from ROM,
         but they may not be supported by all PlayStation 2 variants. */
     SifExecModuleBuffer(sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
     SifExecModuleBuffer(mcman_irx, size_mcman_irx, 0, NULL, NULL);
