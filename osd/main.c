@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
     // Initialize libmc.
     mcInit(MC_TYPE_XMC);
 
-    // Load ADDDRV. The OSD has it listed in rom0:OSDCNF/IOPBTCONF, but it is otherwise not loaded automatically.
+    // Load ADDDRV. The OSD has it listed in rom0:OSDCNF/IOPBTCON2, but it is otherwise not loaded automatically.
     SifLoadModule("rom0:ADDDRV", 0, NULL);
 
     // Initialize libcdvd & supplement functions (which are not part of the ancient libcdvd library we use).
